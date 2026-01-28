@@ -26,9 +26,15 @@ export const useAuthStore = create<AuthState>()(
 				try {
 					const response = await api.post<LoginResponse>(
 						"/api/v1/admin/login/",
-						credentials
+						credentials,
 					);
 					const { user, access, refresh } = response.data.data;
+
+					// Set session cookie for middleware
+					if (typeof window !== "undefined") {
+						document.cookie = `session=true; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+					}
+
 					set({
 						user,
 						accessToken: access,
@@ -36,14 +42,23 @@ export const useAuthStore = create<AuthState>()(
 						isLoading: false,
 					});
 				} catch (error: any) {
+					const errorMessage =
+						error.response?.data?.message ||
+						error.response?.data?.error ||
+						"Login failed";
 					set({
 						isLoading: false,
-						error: error.response?.data?.message || "Login failed",
+						error: errorMessage,
 					});
 					throw error;
 				}
 			},
 			logout: () => {
+				// Remove session cookie
+				if (typeof window !== "undefined") {
+					document.cookie =
+						"session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+				}
 				set({ user: null, accessToken: null, refreshToken: null });
 			},
 		}),
@@ -54,6 +69,6 @@ export const useAuthStore = create<AuthState>()(
 				accessToken: state.accessToken,
 				refreshToken: state.refreshToken,
 			}),
-		}
-	)
+		},
+	),
 );

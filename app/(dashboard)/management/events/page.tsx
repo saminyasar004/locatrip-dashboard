@@ -22,6 +22,7 @@ import { Edit, Loader2, MoreVertical, Plus, Trash2 } from "lucide-react";
 import EventModal from "@/components/common/event-modal";
 import {
 	createEvent,
+	deleteEvent,
 	getEventSummary,
 	listEvents,
 	updateEvent,
@@ -98,6 +99,16 @@ export default function Events() {
 			await fetchData();
 		} catch (error) {
 			console.error("Error submitting event:", error);
+		}
+	};
+
+	const handleDeleteEvent = async (id: string | number) => {
+		if (!confirm("Are you sure you want to delete this category?")) return;
+		try {
+			await deleteEvent(id);
+			await fetchData();
+		} catch (error) {
+			console.error("Error deleting event:", error);
 		}
 	};
 
@@ -214,7 +225,18 @@ export default function Events() {
 											</span>
 										</DropdownMenuItem>
 
-										<DropdownMenuItem onClick={() => {}}>
+										<DropdownMenuItem
+											onClick={() => {
+												const categoryId =
+													category.event_id ||
+													category.id;
+												if (categoryId) {
+													handleDeleteEvent(
+														categoryId,
+													);
+												}
+											}}
+										>
 											<span className="flex items-center gap-2 cursor-pointer">
 												<Trash2 className="text-red-500 w-4 h-4" />
 												Delete

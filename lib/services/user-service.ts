@@ -117,3 +117,15 @@ export const updateEvent = async (
 	);
 	return response.data;
 };
+
+export const deleteEvent = async (
+	id: string | number,
+): Promise<{ status: string; message: string }> => {
+	const numericId = typeof id === "string" ? parseInt(id, 10) : id;
+	const response = await api.delete("/api/v1/admin/admin_events/", {
+		data: {
+			event_id: isNaN(numericId) ? id : numericId,
+		},
+	});
+	return response.data;
+};

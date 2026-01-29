@@ -1,164 +1,96 @@
 "use client";
 import { UserTable } from "@/components/common/user-table";
 import { UserMiniType } from "@/types/user";
-import { Search } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
 } from "@/components/ui/select";
-
-const users: UserMiniType[] = [
-    {
-        id: "1a2b3c4d",
-        username: "alice_wonderland",
-        status: "online",
-        avatar: "https://i.pravatar.cc/150?img=1",
-    },
-    {
-        id: "2b3c4d5e",
-        username: "bob_the_builder",
-        status: "offline",
-        avatar: "https://i.pravatar.cc/150?img=2",
-    },
-    {
-        id: "3c4d5e6f",
-        username: "charlie_adventurer",
-        status: "busy",
-        avatar: "https://i.pravatar.cc/150?img=3",
-    },
-    {
-        id: "4d5e6f7g",
-        username: "david_mountain_climber",
-        status: "away",
-        avatar: "https://i.pravatar.cc/150?img=4",
-    },
-    {
-        id: "5e6f7g8h",
-        username: "eve_cyber_guardian",
-        status: "online",
-        avatar: "https://i.pravatar.cc/150?img=5",
-    },
-    {
-        id: "6f7g8h9i",
-        username: "frank_the_tank",
-        status: "offline",
-        avatar: "https://i.pravatar.cc/150?img=6",
-    },
-    {
-        id: "7g8h9i0j",
-        username: "grace_harmony_smith",
-        status: "busy",
-        avatar: "https://i.pravatar.cc/150?img=7",
-    },
-    {
-        id: "8h9i0j1k",
-        username: "heidi_the_strategist",
-        status: "away",
-        avatar: "https://i.pravatar.cc/150?img=8",
-    },
-    {
-        id: "9i0j1k2l",
-        username: "ivan_master_coder",
-        status: "online",
-        avatar: "https://i.pravatar.cc/150?img=9",
-    },
-    {
-        id: "0j1k2l3m",
-        username: "judy_the_juggler",
-        status: "offline",
-        avatar: "https://i.pravatar.cc/150?img=10",
-    },
-
-    {
-        id: "1a2b3c4d",
-        username: "alice_wonderland",
-        status: "online",
-        avatar: "https://i.pravatar.cc/150?img=1",
-    },
-    {
-        id: "2b3c4d5e",
-        username: "bob_the_builder",
-        status: "offline",
-        avatar: "https://i.pravatar.cc/150?img=2",
-    },
-    {
-        id: "3c4d5e6f",
-        username: "charlie_adventurer",
-        status: "busy",
-        avatar: "https://i.pravatar.cc/150?img=3",
-    },
-    {
-        id: "4d5e6f7g",
-        username: "david_mountain_climber",
-        status: "away",
-        avatar: "https://i.pravatar.cc/150?img=4",
-    },
-    {
-        id: "5e6f7g8h",
-        username: "eve_cyber_guardian",
-        status: "online",
-        avatar: "https://i.pravatar.cc/150?img=5",
-    },
-    {
-        id: "6f7g8h9i",
-        username: "frank_the_tank",
-        status: "offline",
-        avatar: "https://i.pravatar.cc/150?img=6",
-    },
-    {
-        id: "7g8h9i0j",
-        username: "grace_harmony_smith",
-        status: "busy",
-        avatar: "https://i.pravatar.cc/150?img=7",
-    },
-    {
-        id: "8h9i0j1k",
-        username: "heidi_the_strategist",
-        status: "away",
-        avatar: "https://i.pravatar.cc/150?img=8",
-    },
-    {
-        id: "9i0j1k2l",
-        username: "ivan_master_coder",
-        status: "online",
-        avatar: "https://i.pravatar.cc/150?img=9",
-    },
-    {
-        id: "0j1k2l3m",
-        username: "judy_the_juggler",
-        status: "offline",
-        avatar: "https://i.pravatar.cc/150?img=10",
-    },
-];
+import { useEffect, useState } from "react";
+import { getAllUsers } from "@/lib/services/user-service";
 
 export default function AllUsersPage() {
-    return (
-        <div className="space-y-8">
-            <div className="flex gap-6 h-12">
-                <div className="relative w-full  max-w-2xl h-full">
-                    <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
-                        placeholder="Search..."
-                        className="pl-12 bg-muted-background h-full rounded-4xl border-none"
-                    />
-                </div>
-                <Select defaultValue="all" onValueChange={(select_input) => { }}>
-                    <SelectTrigger className="w-32 !h-full">
-                        <SelectValue placeholder="All Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Status</SelectItem>
-                        <SelectItem value="new">New</SelectItem>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="deactive">Deactive</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
-            <UserTable users={users} showPagination={true} />
-        </div>
-    );
+	const [users, setUsers] = useState<UserMiniType[]>([]);
+	const [isLoading, setIsLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
+
+	useEffect(() => {
+		const fetchUsers = async () => {
+			try {
+				setIsLoading(true);
+				const response = await getAllUsers();
+				if (response.status === "success") {
+					const mappedUsers: UserMiniType[] = response.data.map(
+						(user) => ({
+							id: user.user_id.toString(),
+							username:
+								user.full_name || user.email.split("@")[0],
+							email: user.email,
+							status: user.status,
+						}),
+					);
+					setUsers(mappedUsers);
+				} else {
+					setError("Failed to fetch users");
+				}
+			} catch (err) {
+				console.error("Error fetching users:", err);
+				setError("An error occurred while fetching users");
+			} finally {
+				setIsLoading(false);
+			}
+		};
+
+		fetchUsers();
+	}, []);
+
+	if (error) {
+		return (
+			<div className="flex flex-col items-center justify-center p-12 text-center">
+				<p className="text-destructive mb-4">{error}</p>
+				<button
+					onClick={() => window.location.reload()}
+					className="text-primary hover:underline"
+				>
+					Try again
+				</button>
+			</div>
+		);
+	}
+
+	return (
+		<div className="space-y-8">
+			<div className="flex gap-6 h-12">
+				<div className="relative w-full  max-w-2xl h-full">
+					<Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+					<Input
+						placeholder="Search..."
+						className="pl-12 bg-muted-background h-full rounded-4xl border-none"
+					/>
+				</div>
+				<Select defaultValue="all" onValueChange={(select_input) => {}}>
+					<SelectTrigger className="w-32 h-full!">
+						<SelectValue placeholder="All Status" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All Status</SelectItem>
+						<SelectItem value="new">New</SelectItem>
+						<SelectItem value="active">Active</SelectItem>
+						<SelectItem value="deactive">Deactive</SelectItem>
+					</SelectContent>
+				</Select>
+			</div>
+			{isLoading ? (
+				<div className="flex items-center justify-center p-12">
+					<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+				</div>
+			) : (
+				<UserTable users={users} showPagination={true} />
+			)}
+		</div>
+	);
 }

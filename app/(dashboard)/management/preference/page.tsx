@@ -27,7 +27,6 @@ export type Preference = {
 	id: string;
 	title: string;
 	usage: number;
-	status: boolean;
 	description?: string;
 };
 
@@ -46,7 +45,6 @@ export default function Page() {
 					id: item.id.toString(),
 					title: item.name,
 					usage: 0, // Not provided by the get interest list API
-					status: item.status,
 					description: "", // Not provided by the interest list API
 				}),
 			);
@@ -61,26 +59,6 @@ export default function Page() {
 	useEffect(() => {
 		fetchData();
 	}, []);
-
-	const toggleCheck = async (id: string) => {
-		const pref = preferences.find((p) => p.id === id);
-		if (!pref) return;
-
-		try {
-			const newStatus = !pref.status;
-			// Optimistic update
-			setPreferences(
-				preferences.map((p) =>
-					p.id === id ? { ...p, status: newStatus } : p,
-				),
-			);
-			await updateInterest(id, undefined, newStatus);
-		} catch (error) {
-			console.error("Error toggling interest status:", error);
-			// Rollback on error
-			await fetchData();
-		}
-	};
 
 	const handleInterestSubmit = async (name: string) => {
 		try {
@@ -141,7 +119,6 @@ export default function Page() {
 			<div>
 				<PreferenceTable
 					preferences={preferences}
-					toggleCheck={toggleCheck}
 					onDelete={handleDeleteInterest}
 					onShowModal={(id: string) => {
 						setShowModal(true);

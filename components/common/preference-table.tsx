@@ -22,19 +22,16 @@ import {
 	TableHeader,
 	TableRow,
 } from "../ui/table";
-import { Switch } from "../ui/switch";
 import { Preference } from "@/app/(dashboard)/management/preference/page";
 
 type Props = {
 	preferences: Preference[];
-	toggleCheck: (id: string) => void;
 	onDelete: (id: string) => void;
 	onShowModal: (id: string) => void;
 };
 
 export default function PreferenceTable({
 	preferences,
-	toggleCheck,
 	onDelete,
 	onShowModal,
 }: Props) {
@@ -48,9 +45,6 @@ export default function PreferenceTable({
 						</TableHead>
 						<TableHead className="text-muted-foreground">
 							Usage
-						</TableHead>
-						<TableHead className="text-muted-foreground">
-							Status
 						</TableHead>
 						<TableHead className="text-end text-muted-foreground">
 							Action
@@ -70,18 +64,6 @@ export default function PreferenceTable({
 							<TableCell className="flex items-center gap-4 text-lg">
 								<Users strokeWidth={1.5} />
 								<span>{pref.usage}</span>
-							</TableCell>
-							<TableCell className="">
-								<div className="flex items-center gap-4">
-									<Switch
-										className=" cursor-pointer"
-										checked={pref.status}
-										onCheckedChange={() =>
-											toggleCheck(pref.id)
-										}
-									/>
-									<span>Active</span>
-								</div>
 							</TableCell>
 							<TableCell className="relative">
 								<DropdownMenu>

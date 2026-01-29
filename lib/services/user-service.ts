@@ -9,6 +9,7 @@ import {
 	UserGrowthApiResponse,
 } from "@/types/chart";
 import { EventSummaryResponse, CreateEventResponse } from "@/types/event";
+import { InterestApiResponse } from "@/types/preference";
 
 export const getAllUsers = async (
 	filter?: string,
@@ -114,6 +115,13 @@ export const updateEvent = async (
 			event_id: isNaN(numericId) ? id : numericId,
 			event_name: name,
 		},
+	);
+	return response.data;
+};
+
+export const getInterestList = async (): Promise<InterestApiResponse> => {
+	const response = await api.get<InterestApiResponse>(
+		"/api/v1/admin/admin_interest/",
 	);
 	return response.data;
 };

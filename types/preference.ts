@@ -11,3 +11,8 @@ export interface InterestApiResponse {
 	status: string;
 	data: InterestType[];
 }
+
+export interface CreateInterestResponse {
+	status: string;
+	data: InterestType;
+}

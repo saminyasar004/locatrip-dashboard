@@ -9,7 +9,10 @@ import {
 	UserGrowthApiResponse,
 } from "@/types/chart";
 import { EventSummaryResponse, CreateEventResponse } from "@/types/event";
-import { InterestApiResponse } from "@/types/preference";
+import {
+	InterestApiResponse,
+	CreateInterestResponse,
+} from "@/types/preference";
 
 export const getAllUsers = async (
 	filter?: string,
@@ -122,6 +125,18 @@ export const updateEvent = async (
 export const getInterestList = async (): Promise<InterestApiResponse> => {
 	const response = await api.get<InterestApiResponse>(
 		"/api/v1/admin/admin_interest/",
+	);
+	return response.data;
+};
+
+export const createInterest = async (
+	name: string,
+): Promise<CreateInterestResponse> => {
+	const response = await api.post<CreateInterestResponse>(
+		"/api/v1/admin/admin_interest/",
+		{
+			name: name,
+		},
 	);
 	return response.data;
 };

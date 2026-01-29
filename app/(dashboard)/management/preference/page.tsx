@@ -13,7 +13,7 @@ import { SelectItem } from "@/components/ui/select";
 import PreferenceTable from "@/components/common/preference-table";
 import { useState } from "react";
 import PreferenceModal from "@/components/common/preference-modal";
-import { getInterestList } from "@/lib/services/user-service";
+import { createInterest, getInterestList } from "@/lib/services/user-service";
 import { InterestType } from "@/types/preference";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
@@ -63,6 +63,11 @@ export default function Page() {
 				pref.id === id ? { ...pref, status: !pref.status } : pref,
 			),
 		);
+	};
+
+	const handleInterestSubmit = async (name: string) => {
+		await createInterest(name);
+		await fetchData();
 	};
 
 	if (isLoading) {
@@ -117,8 +122,7 @@ export default function Page() {
 					setSelectedPref(null);
 				}}
 				isOpen={showModal}
-				onCreatePref={() => {}}
-				onUpdatePref={() => {}}
+				onSubmit={handleInterestSubmit}
 			/>
 		</div>
 	);

@@ -11,7 +11,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useEffect, useState } from "react";
-import { getAllUsers } from "@/lib/services/user-service";
+import { getAllUsers, toggleUserStatus } from "@/lib/services/user-service";
 
 export default function AllUsersPage() {
 	const [users, setUsers] = useState<UserMiniType[]>([]);
@@ -56,6 +56,26 @@ export default function AllUsersPage() {
 	useEffect(() => {
 		fetchUsers();
 	}, [statusFilter]);
+
+	const handleToggleStatus = async (
+		userId: string,
+		type: "activate" | "deactivate",
+	) => {
+		try {
+			setIsLoading(true);
+			const response = await toggleUserStatus(userId, type);
+			if (response.status === "success") {
+				await fetchUsers();
+			} else {
+				alert(response.message || "Failed to update user status");
+			}
+		} catch (err) {
+			console.error("Error toggling user status:", err);
+			alert("An error occurred while updating user status");
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
 	// Client-side search filtering
 	const filteredUsers = users.filter((user) => {
@@ -112,7 +132,11 @@ export default function AllUsersPage() {
 					<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
 				</div>
 			) : (
-				<UserTable users={filteredUsers} showPagination={true} />
+				<UserTable
+					users={filteredUsers}
+					showPagination={true}
+					onToggleStatus={handleToggleStatus}
+				/>
 			)}
 		</div>
 	);

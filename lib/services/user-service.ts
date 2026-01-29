@@ -22,3 +22,14 @@ export const getAllUsers = async (
 	);
 	return response.data;
 };
+
+export const toggleUserStatus = async (
+	userId: string,
+	type: "activate" | "deactivate",
+): Promise<{ status: string; message: string }> => {
+	const response = await api.post("/api/v1/admin/user_activate_deactivate/", {
+		user_id: userId,
+		type: type,
+	});
+	return response.data;
+};

@@ -17,3 +17,8 @@ export interface UserApiResponse {
 	total_user?: number;
 	data: UserType[];
 }
+
+export interface UserStatusToggleResponse {
+	status: string;
+	message: string;
+}

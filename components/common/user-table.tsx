@@ -18,7 +18,6 @@ import {
 	TableHeader,
 	TableRow,
 } from "../ui/table";
-import { Avatar, AvatarImage } from "../ui/avatar";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -30,9 +29,11 @@ import { MoreVertical } from "lucide-react";
 export function UserTable({
 	users,
 	showPagination,
+	onToggleStatus,
 }: {
 	users: UserMiniType[];
 	showPagination: boolean;
+	onToggleStatus?: (userId: string, type: "activate" | "deactivate") => void;
 }) {
 	return (
 		<div className="overflow-hidden">
@@ -79,9 +80,22 @@ export function UserTable({
 										<MoreVertical className="w-6" />
 									</DropdownMenuTrigger>
 									<DropdownMenuContent>
-										<DropdownMenuItem>
+										<DropdownMenuItem
+											onClick={() =>
+												onToggleStatus?.(
+													user.id,
+													user.status.toLowerCase() ===
+														"activate"
+														? "deactivate"
+														: "activate",
+												)
+											}
+										>
 											<span className="flex items-center gap-2 cursor-pointer">
-												Deactive
+												{user.status.toLowerCase() ===
+												"activate"
+													? "Deactivate"
+													: "Activate"}
 											</span>
 										</DropdownMenuItem>
 									</DropdownMenuContent>

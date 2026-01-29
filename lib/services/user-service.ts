@@ -13,6 +13,7 @@ import {
 	InterestApiResponse,
 	CreateInterestResponse,
 } from "@/types/preference";
+import { SubscriptionApiResponse } from "@/types/subscription";
 
 export const getAllUsers = async (
 	filter?: string,
@@ -167,6 +168,14 @@ export const deleteInterest = async (
 	});
 	return response.data;
 };
+
+export const getSubscriptionPlans =
+	async (): Promise<SubscriptionApiResponse> => {
+		const response = await api.get<SubscriptionApiResponse>(
+			"/api/v1/admin/payment/",
+		);
+		return response.data;
+	};
 
 export const deleteEvent = async (
 	id: string | number,

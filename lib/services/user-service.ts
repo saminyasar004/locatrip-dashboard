@@ -86,12 +86,32 @@ export const getEventSummary = async (): Promise<EventSummaryResponse> => {
 	return response.data;
 };
 
+export const listEvents = async (): Promise<any> => {
+	const response = await api.get("/api/v1/admin/admin_events/");
+	return response.data;
+};
+
 export const createEvent = async (
 	name: string,
 ): Promise<CreateEventResponse> => {
 	const response = await api.post<CreateEventResponse>(
 		"/api/v1/admin/admin_events/",
 		{
+			event_name: name,
+		},
+	);
+	return response.data;
+};
+
+export const updateEvent = async (
+	id: string | number,
+	name: string,
+): Promise<CreateEventResponse> => {
+	const numericId = typeof id === "string" ? parseInt(id, 10) : id;
+	const response = await api.patch<CreateEventResponse>(
+		"/api/v1/admin/admin_events/",
+		{
+			event_id: isNaN(numericId) ? id : numericId,
 			event_name: name,
 		},
 	);

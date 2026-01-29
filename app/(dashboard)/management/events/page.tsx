@@ -20,7 +20,12 @@ import {
 import { H2, H3, H4 } from "@/components/ui/typography";
 import { Edit, Loader2, MoreVertical, Plus, Trash2 } from "lucide-react";
 import EventModal from "@/components/common/event-modal";
-import { createEvent, getEventSummary } from "@/lib/services/user-service";
+import {
+	createEvent,
+	getEventSummary,
+	listEvents,
+	updateEvent,
+} from "@/lib/services/user-service";
 import { EventSummaryResponse } from "@/types/event";
 
 export type EventType = {
@@ -38,10 +43,42 @@ export default function Events() {
 	const fetchData = async () => {
 		try {
 			setIsLoading(true);
-			const res = await getEventSummary();
-			setData(res);
+			const [summaryRes, listRes] = await Promise.all([
+				getEventSummary(),
+				listEvents(),
+			]);
+
+			// Merge the event count from summary with the IDs from the admin list
+			const enrichedCategories = summaryRes.category_event_summary.map(
+				(cat) => {
+					// Use any response structure from listRes that might contain the ID
+					// Assuming listRes is the response from /api/v1/admin/admin_events/
+					// which usually returns { data: [...] } or just [...]
+					const adminList = Array.isArray(listRes)
+						? listRes
+						: listRes.data || [];
+					const matchingAdmin = adminList.find(
+						(adminCat: any) =>
+							adminCat.event_name === cat.name ||
+							adminCat.name === cat.name,
+					);
+
+					return {
+						...cat,
+						id:
+							matchingAdmin?.event_id ||
+							matchingAdmin?.id ||
+							cat.id,
+					};
+				},
+			);
+
+			setData({
+				...summaryRes,
+				category_event_summary: enrichedCategories,
+			});
 		} catch (error) {
-			console.error("Error fetching event summary:", error);
+			console.error("Error fetching event data:", error);
 		} finally {
 			setIsLoading(false);
 		}
@@ -53,10 +90,14 @@ export default function Events() {
 
 	const handleEventSubmit = async (name: string) => {
 		try {
-			await createEvent(name);
+			if (selectedEv) {
+				await updateEvent(selectedEv.id, name);
+			} else {
+				await createEvent(name);
+			}
 			await fetchData();
 		} catch (error) {
-			console.error("Error creating event:", error);
+			console.error("Error submitting event:", error);
 		}
 	};
 
@@ -153,8 +194,13 @@ export default function Events() {
 											onClick={() =>
 												setTimeout(() => {
 													setShowModal(true);
+													const categoryId =
+														category.event_id ||
+														category.id;
 													setSelectedEv({
-														id: index.toString(),
+														id: categoryId
+															? categoryId.toString()
+															: index.toString(),
 														title: category.name,
 														numberOfEvents:
 															category.event_count,

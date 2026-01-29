@@ -3,6 +3,8 @@ export interface EventSummaryResponse {
 	total_itinerary: number;
 	total_events: number;
 	category_event_summary: {
+		id?: number | string;
+		event_id?: number | string;
 		name: string;
 		event_count: number;
 	}[];

@@ -17,43 +17,61 @@ export default function AllUsersPage() {
 	const [users, setUsers] = useState<UserMiniType[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const [statusFilter, setStatusFilter] = useState("all");
+	const [searchQuery, setSearchQuery] = useState("");
+
+	const fetchUsers = async () => {
+		try {
+			setIsLoading(true);
+			setError(null);
+
+			// Map UI filter values to API expected values
+			let apiFilter = statusFilter;
+			if (statusFilter === "active") apiFilter = "Activate";
+			if (statusFilter === "deactive") apiFilter = "Deactivate";
+			if (statusFilter === "new") apiFilter = "New";
+
+			const response = await getAllUsers(apiFilter);
+			if (response.status === "success") {
+				const mappedUsers: UserMiniType[] = response.data.map(
+					(user) => ({
+						id: user.user_id.toString(),
+						username: user.full_name || user.email.split("@")[0],
+						email: user.email,
+						status: user.status,
+					}),
+				);
+				setUsers(mappedUsers);
+			} else {
+				setError("Failed to fetch users");
+			}
+		} catch (err) {
+			console.error("Error fetching users:", err);
+			setError("An error occurred while fetching users");
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
 	useEffect(() => {
-		const fetchUsers = async () => {
-			try {
-				setIsLoading(true);
-				const response = await getAllUsers();
-				if (response.status === "success") {
-					const mappedUsers: UserMiniType[] = response.data.map(
-						(user) => ({
-							id: user.user_id.toString(),
-							username:
-								user.full_name || user.email.split("@")[0],
-							email: user.email,
-							status: user.status,
-						}),
-					);
-					setUsers(mappedUsers);
-				} else {
-					setError("Failed to fetch users");
-				}
-			} catch (err) {
-				console.error("Error fetching users:", err);
-				setError("An error occurred while fetching users");
-			} finally {
-				setIsLoading(false);
-			}
-		};
-
 		fetchUsers();
-	}, []);
+	}, [statusFilter]);
+
+	// Client-side search filtering
+	const filteredUsers = users.filter((user) => {
+		const query = searchQuery.toLowerCase();
+		return (
+			user.username.toLowerCase().includes(query) ||
+			(user.email && user.email.toLowerCase().includes(query))
+		);
+	});
 
 	if (error) {
 		return (
 			<div className="flex flex-col items-center justify-center p-12 text-center">
 				<p className="text-destructive mb-4">{error}</p>
 				<button
-					onClick={() => window.location.reload()}
+					onClick={() => fetchUsers()}
 					className="text-primary hover:underline"
 				>
 					Try again
@@ -68,11 +86,16 @@ export default function AllUsersPage() {
 				<div className="relative w-full  max-w-2xl h-full">
 					<Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
 					<Input
-						placeholder="Search..."
+						placeholder="Search by name or email..."
 						className="pl-12 bg-muted-background h-full rounded-4xl border-none"
+						value={searchQuery}
+						onChange={(e) => setSearchQuery(e.target.value)}
 					/>
 				</div>
-				<Select defaultValue="all" onValueChange={(select_input) => {}}>
+				<Select
+					defaultValue="all"
+					onValueChange={(value) => setStatusFilter(value)}
+				>
 					<SelectTrigger className="w-32 h-full!">
 						<SelectValue placeholder="All Status" />
 					</SelectTrigger>
@@ -89,7 +112,7 @@ export default function AllUsersPage() {
 					<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
 				</div>
 			) : (
-				<UserTable users={users} showPagination={true} />
+				<UserTable users={filteredUsers} showPagination={true} />
 			)}
 		</div>
 	);

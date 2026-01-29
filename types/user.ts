@@ -14,6 +14,6 @@ export type UserType = {
 
 export interface UserApiResponse {
 	status: string;
-	total_user: number;
+	total_user?: number;
 	data: UserType[];
 }

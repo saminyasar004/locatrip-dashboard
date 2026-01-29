@@ -13,7 +13,10 @@ import {
 	useState,
 } from "react";
 import { H3, P } from "../ui/typography";
-import { createSubscriptionPlan } from "@/lib/services/user-service";
+import {
+	createSubscriptionPlan,
+	updateSubscriptionPlan,
+} from "@/lib/services/user-service";
 import { Loader2 } from "lucide-react";
 
 type Props = {
@@ -85,8 +88,12 @@ export default function PlanEditModal({
 		try {
 			setIsLoading(true);
 			if (selectedPlan) {
-				// Update logic (to be implemented if needed)
-				console.log("Updating plan:", selectedPlan.id);
+				await updateSubscriptionPlan(selectedPlan.id, {
+					name: form.title,
+					price: Number(form.price),
+					duration: Number(form.duration),
+					features: form.features,
+				});
 			} else {
 				await createSubscriptionPlan(
 					form.title,
@@ -119,7 +126,7 @@ export default function PlanEditModal({
 						</p>
 					</div>
 					<Button variant={"ghost"}>
-						<SquarePen strokeWidth={2} className="!w-5 !h-5" />
+						<SquarePen strokeWidth={2} className="w-5! h-5!" />
 					</Button>
 				</DialogTitle>
 				<form className="space-y-4" onSubmit={handleSubmit}>
@@ -177,7 +184,7 @@ export default function PlanEditModal({
 											handleFeatureDelete(i);
 										}}
 									>
-										<Trash2 className="!w-5 !h-5" />
+										<Trash2 className="w-5! h-5!" />
 									</Button>
 								</li>
 							))}
@@ -200,7 +207,7 @@ export default function PlanEditModal({
 										}
 									}}
 								>
-									<Plus className="!w-5 !h-5" />
+									<Plus className="w-5! h-5!" />
 								</Button>
 							</li>
 						</ul>

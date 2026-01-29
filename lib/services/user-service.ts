@@ -211,6 +211,41 @@ export const createSubscriptionPlan = async (
 	return response.data;
 };
 
+export const updateSubscriptionPlan = async (
+	id: string | number,
+	updates: {
+		name?: string;
+		price?: number;
+		duration?: number;
+		features?: string[];
+	},
+): Promise<CreateSubscriptionResponse> => {
+	const payload: any = { id: id.toString() };
+
+	if (updates.name) payload.plan_name = updates.name;
+	if (updates.price !== undefined) payload.price = updates.price.toString();
+	if (updates.duration !== undefined)
+		payload.duration = updates.duration.toString();
+
+	if (updates.features) {
+		updates.features.forEach((feature, index) => {
+			if (index < 10) {
+				payload[`feature_${index + 1}`] = feature;
+			}
+		});
+		// Fill remaining features with empty strings if needed
+		for (let i = updates.features.length + 1; i <= 10; i++) {
+			payload[`feature_${i}`] = "";
+		}
+	}
+
+	const response = await api.patch<CreateSubscriptionResponse>(
+		"/api/v1/admin/payment/",
+		payload,
+	);
+	return response.data;
+};
+
 export const deleteEvent = async (
 	id: string | number,
 ): Promise<{ status: string; message: string }> => {

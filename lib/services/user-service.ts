@@ -1,5 +1,9 @@
 import api from "@/lib/axios";
-import { UserApiResponse } from "@/types/user";
+import {
+	UserApiResponse,
+	UserPreferenceResponse,
+	UserStatusToggleResponse,
+} from "@/types/user";
 import {
 	SubscriptionRevenueApiResponse,
 	UserGrowthApiResponse,
@@ -61,3 +65,15 @@ export const getSubscriptionRevenueChart =
 		);
 		return response.data;
 	};
+
+export const getUserPreference = async (
+	userId: string | number,
+): Promise<UserPreferenceResponse> => {
+	const response = await api.get<UserPreferenceResponse>(
+		"/api/v1/admin/user_info_and_preference_list/",
+		{
+			data: { user_id: userId.toString() },
+		},
+	);
+	return response.data;
+};

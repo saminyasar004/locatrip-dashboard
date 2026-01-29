@@ -11,6 +11,7 @@ interface AuthState {
 	error: string | null;
 	login: (credentials: LoginCredentials) => Promise<void>;
 	logout: () => void;
+	updateUser: (user: User) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -61,6 +62,7 @@ export const useAuthStore = create<AuthState>()(
 				}
 				set({ user: null, accessToken: null, refreshToken: null });
 			},
+			updateUser: (user) => set({ user }),
 		}),
 		{
 			name: "auth-storage",

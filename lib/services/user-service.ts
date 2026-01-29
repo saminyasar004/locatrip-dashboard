@@ -33,3 +33,12 @@ export const toggleUserStatus = async (
 	});
 	return response.data;
 };
+
+export const updateProfile = async (formData: FormData): Promise<any> => {
+	const response = await api.patch("/api/profile/", formData, {
+		headers: {
+			"Content-Type": "multipart/form-data",
+		},
+	});
+	return response.data;
+};

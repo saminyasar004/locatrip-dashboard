@@ -1,138 +1,188 @@
 "use client";
 
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
 } from "@/components/ui/table";
 import { H2, H3, H4 } from "@/components/ui/typography";
-import { Edit, MoreVertical, Plus, Trash2 } from "lucide-react";
+import { Edit, Loader2, MoreVertical, Plus, Trash2 } from "lucide-react";
 import EventModal from "@/components/common/event-modal";
+import { getEventSummary } from "@/lib/services/user-service";
+import { EventSummaryResponse } from "@/types/event";
 
 export type EventType = {
-    id: string;
-    title: string;
-    numberOfEvents: number;
+	id: string;
+	title: string;
+	numberOfEvents: number;
 };
 
 export default function Events() {
-    const [events, setEvents] = useState<EventType[]>([
-        { id: "1", title: "Hiking", numberOfEvents: 10 },
-        { id: "2", title: "Swimming", numberOfEvents: 10 },
-        { id: "3", title: "Riding", numberOfEvents: 10 },
-        { id: "4", title: "Adventure", numberOfEvents: 10 },
-        { id: "5", title: "Hiking", numberOfEvents: 10 },
-        { id: "6", title: "Hiking", numberOfEvents: 10 },
-        { id: "7", title: "Hiking", numberOfEvents: 10 },
-        { id: "8", title: "HikingHikingHikingHiking", numberOfEvents: 10 },
-    ]);
+	const [data, setData] = useState<EventSummaryResponse | null>(null);
+	const [isLoading, setIsLoading] = useState(true);
+	const [showModal, setShowModal] = useState<boolean>(false);
+	const [selectedEv, setSelectedEv] = useState<EventType | null>(null);
 
-    const [showModal, setShowModal] = useState<boolean>(false);
-    const [selectedEv, setSelectedEv] = useState<EventType | null>(null);
+	const fetchData = async () => {
+		try {
+			setIsLoading(true);
+			const res = await getEventSummary();
+			setData(res);
+		} catch (error) {
+			console.error("Error fetching event summary:", error);
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
-    return (
-        <div className="space-y-8">
-            <Card>
-                <CardContent>
-                    <H4 className="text-muted-foreground">Total Event</H4>
-                    <H2>100</H2>
-                    <small className="text-muted-foreground text-sm">
-                        Overall events across all categories
-                    </small>
-                </CardContent>
-            </Card>
+	useEffect(() => {
+		fetchData();
+	}, []);
 
-            <div className="flex justify-between">
-                <H3>Event Categories</H3>
-                <Button
-                    className="flex items-center gap-2"
-                    onClick={() => {
-                        setShowModal(true);
-                        setSelectedEv(null);
-                    }}
-                >
-                    <Plus color="white" strokeWidth={3} />
-                    Add Categories
-                </Button>
-            </div>
+	if (isLoading) {
+		return (
+			<div className="flex h-[80vh] items-center justify-center">
+				<Loader2 className="h-12 w-12 animate-spin text-primary" />
+			</div>
+		);
+	}
 
-            <Table className="overflow-hidden">
-                <TableHeader className="text-muted-foreground bg-muted-background !rounded-4xl">
-                    <TableRow>
-                        <TableHead className="text-muted-foreground">
-                            Category Name
-                        </TableHead>
-                        <TableHead className="text-muted-foreground ">
-                            Number of Events
-                        </TableHead>
-                        <TableHead className="text-muted-foreground w-full text-end">
-                            Action
-                        </TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {events.map((event) => (
-                        <TableRow className="" key={event.id}>
-                            <TableCell className="text-lg">{event.title}</TableCell>
-                            <TableCell className="text-lg">{event.numberOfEvents}</TableCell>
-                            <TableCell className="relative">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger className="cursor-pointer absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-muted-background/40 rounded-2xl">
-                                        <MoreVertical className="w-6" />
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent>
-                                        <DropdownMenuItem
-                                            onClick={() =>
-                                                setTimeout(() => {
-                                                    setShowModal(true);
-                                                    setSelectedEv(
-                                                        events.find((pref) => pref.id === event.id) ?? null,
-                                                    );
-                                                }, 120)
-                                            }
-                                        >
-                                            <span className="flex items-center gap-2 cursor-pointer">
-                                                <Edit />
-                                                Edit
-                                            </span>
-                                        </DropdownMenuItem>
+	return (
+		<div className="space-y-8">
+			<div className="grid lg:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-4">
+				<Card>
+					<CardContent className="pt-6">
+						<H4 className="text-muted-foreground">Total Users</H4>
+						<H2>{data?.total_users || 0}</H2>
+						<small className="text-muted-foreground text-sm">
+							Total registered users
+						</small>
+					</CardContent>
+				</Card>
+				<Card>
+					<CardContent className="pt-6">
+						<H4 className="text-muted-foreground">
+							Total Itinerary
+						</H4>
+						<H2>{data?.total_itinerary || 0}</H2>
+						<small className="text-muted-foreground text-sm">
+							Total itineraries created
+						</small>
+					</CardContent>
+				</Card>
+				<Card>
+					<CardContent className="pt-6">
+						<H4 className="text-primary text-2xl font-bold">
+							Total Event
+						</H4>
+						<H2 className="text-primary">
+							{data?.total_events || 0}
+						</H2>
+						<small className="text-muted-foreground text-sm">
+							Overall events across all categories
+						</small>
+					</CardContent>
+				</Card>
+			</div>
 
-                                        <DropdownMenuItem onClick={() => { }}>
-                                            <span className="flex items-center gap-2 cursor-pointer">
-                                                <Trash2 className="text-red-500" />
-                                                Delete
-                                            </span>
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+			<div className="flex justify-between">
+				<H3>Event Categories</H3>
+				<Button
+					className="flex items-center gap-2"
+					onClick={() => {
+						setShowModal(true);
+						setSelectedEv(null);
+					}}
+				>
+					<Plus color="white" strokeWidth={3} />
+					Add Categories
+				</Button>
+			</div>
 
-            <EventModal
-                isOpen={showModal}
-                selectedPref={selectedEv}
-                onClose={() => {
-                    setShowModal(false);
-                    setSelectedEv(null);
-                }}
-                onCreatePref={() => { }}
-                onUpdatePref={() => { }}
-            />
-        </div>
-    );
+			<Table className="overflow-hidden">
+				<TableHeader className="text-muted-foreground bg-muted-background rounded-4xl!">
+					<TableRow>
+						<TableHead className="text-muted-foreground">
+							Category Name
+						</TableHead>
+						<TableHead className="text-muted-foreground ">
+							Number of Events
+						</TableHead>
+						<TableHead className="text-muted-foreground w-full text-end">
+							Action
+						</TableHead>
+					</TableRow>
+				</TableHeader>
+				<TableBody>
+					{data?.category_event_summary.map((category, index) => (
+						<TableRow className="" key={index}>
+							<TableCell className="text-lg">
+								{category.name}
+							</TableCell>
+							<TableCell className="text-lg">
+								{category.event_count}
+							</TableCell>
+							<TableCell className="relative">
+								<DropdownMenu>
+									<DropdownMenuTrigger className="cursor-pointer absolute right-4 top-1/2 -translate-y-1/2 p-2 hover:bg-muted-background/40 rounded-2xl">
+										<MoreVertical className="w-6" />
+									</DropdownMenuTrigger>
+									<DropdownMenuContent>
+										<DropdownMenuItem
+											onClick={() =>
+												setTimeout(() => {
+													setShowModal(true);
+													setSelectedEv({
+														id: index.toString(),
+														title: category.name,
+														numberOfEvents:
+															category.event_count,
+													});
+												}, 120)
+											}
+										>
+											<span className="flex items-center gap-2 cursor-pointer">
+												<Edit className="w-4 h-4" />
+												Edit
+											</span>
+										</DropdownMenuItem>
+
+										<DropdownMenuItem onClick={() => {}}>
+											<span className="flex items-center gap-2 cursor-pointer">
+												<Trash2 className="text-red-500 w-4 h-4" />
+												Delete
+											</span>
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
+							</TableCell>
+						</TableRow>
+					))}
+				</TableBody>
+			</Table>
+
+			<EventModal
+				isOpen={showModal}
+				selectedPref={selectedEv}
+				onClose={() => {
+					setShowModal(false);
+					setSelectedEv(null);
+				}}
+				onCreatePref={() => {}}
+				onUpdatePref={() => {}}
+			/>
+		</div>
+	);
 }

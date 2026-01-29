@@ -8,6 +8,7 @@ import {
 	SubscriptionRevenueApiResponse,
 	UserGrowthApiResponse,
 } from "@/types/chart";
+import { EventSummaryResponse } from "@/types/event";
 
 export const getAllUsers = async (
 	filter?: string,
@@ -74,6 +75,13 @@ export const getUserPreference = async (
 		{
 			data: { user_id: userId.toString() },
 		},
+	);
+	return response.data;
+};
+
+export const getEventSummary = async (): Promise<EventSummaryResponse> => {
+	const response = await api.get<EventSummaryResponse>(
+		"/api/v1/admin/total_envet_iteneray_count/",
 	);
 	return response.data;
 };

@@ -12,7 +12,10 @@ import {
 	Loader2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getSubscriptionPlans } from "@/lib/services/user-service";
+import {
+	deleteSubscriptionPlan,
+	getSubscriptionPlans,
+} from "@/lib/services/user-service";
 import { SubscriptionPlan } from "@/types/subscription";
 
 export type Plan = {
@@ -82,6 +85,17 @@ export default function Page() {
 		fetchPlans();
 	}, []);
 
+	const handleDeletePlan = async (id: string) => {
+		if (!confirm("Are you sure you want to delete this subscription plan?"))
+			return;
+		try {
+			await deleteSubscriptionPlan(id);
+			await fetchPlans();
+		} catch (error) {
+			console.error("Error deleting plan:", error);
+		}
+	};
+
 	if (isLoading) {
 		return (
 			<div className="flex h-[80vh] items-center justify-center">
@@ -110,6 +124,7 @@ export default function Page() {
 					<PlanCard
 						key={i}
 						plan={plan}
+						onDelete={handleDeletePlan}
 						onClickEdit={(id: string) => {
 							setShowModal(true);
 							setSelectedPlan(

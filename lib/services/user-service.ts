@@ -246,6 +246,17 @@ export const updateSubscriptionPlan = async (
 	return response.data;
 };
 
+export const deleteSubscriptionPlan = async (
+	id: string | number,
+): Promise<{ status: string; message: string }> => {
+	const response = await api.delete("/api/v1/admin/payment/", {
+		data: {
+			id: id.toString(),
+		},
+	});
+	return response.data;
+};
+
 export const deleteEvent = async (
 	id: string | number,
 ): Promise<{ status: string; message: string }> => {

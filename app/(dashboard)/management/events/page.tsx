@@ -20,7 +20,7 @@ import {
 import { H2, H3, H4 } from "@/components/ui/typography";
 import { Edit, Loader2, MoreVertical, Plus, Trash2 } from "lucide-react";
 import EventModal from "@/components/common/event-modal";
-import { getEventSummary } from "@/lib/services/user-service";
+import { createEvent, getEventSummary } from "@/lib/services/user-service";
 import { EventSummaryResponse } from "@/types/event";
 
 export type EventType = {
@@ -50,6 +50,15 @@ export default function Events() {
 	useEffect(() => {
 		fetchData();
 	}, []);
+
+	const handleEventSubmit = async (name: string) => {
+		try {
+			await createEvent(name);
+			await fetchData();
+		} catch (error) {
+			console.error("Error creating event:", error);
+		}
+	};
 
 	if (isLoading) {
 		return (
@@ -176,12 +185,11 @@ export default function Events() {
 			<EventModal
 				isOpen={showModal}
 				selectedPref={selectedEv}
+				onSubmit={handleEventSubmit}
 				onClose={() => {
 					setShowModal(false);
 					setSelectedEv(null);
 				}}
-				onCreatePref={() => {}}
-				onUpdatePref={() => {}}
 			/>
 		</div>
 	);

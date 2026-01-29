@@ -8,7 +8,7 @@ import {
 	SubscriptionRevenueApiResponse,
 	UserGrowthApiResponse,
 } from "@/types/chart";
-import { EventSummaryResponse } from "@/types/event";
+import { EventSummaryResponse, CreateEventResponse } from "@/types/event";
 
 export const getAllUsers = async (
 	filter?: string,
@@ -82,6 +82,18 @@ export const getUserPreference = async (
 export const getEventSummary = async (): Promise<EventSummaryResponse> => {
 	const response = await api.get<EventSummaryResponse>(
 		"/api/v1/admin/total_envet_iteneray_count/",
+	);
+	return response.data;
+};
+
+export const createEvent = async (
+	name: string,
+): Promise<CreateEventResponse> => {
+	const response = await api.post<CreateEventResponse>(
+		"/api/v1/admin/admin_events/",
+		{
+			event_name: name,
+		},
 	);
 	return response.data;
 };

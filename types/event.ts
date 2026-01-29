@@ -7,3 +7,12 @@ export interface EventSummaryResponse {
 		event_count: number;
 	}[];
 }
+
+export interface CreateEventResponse {
+	status: string;
+	message: string;
+	data: {
+		event_id: number;
+		event_name: string;
+	}[];
+}

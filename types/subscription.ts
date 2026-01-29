@@ -20,3 +20,8 @@ export interface SubscriptionApiResponse {
 	status: string;
 	payment: SubscriptionPlan[];
 }
+
+export interface CreateSubscriptionResponse {
+	status: string;
+	payment: SubscriptionPlan;
+}

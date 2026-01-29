@@ -13,7 +13,10 @@ import {
 	InterestApiResponse,
 	CreateInterestResponse,
 } from "@/types/preference";
-import { SubscriptionApiResponse } from "@/types/subscription";
+import {
+	SubscriptionApiResponse,
+	CreateSubscriptionResponse,
+} from "@/types/subscription";
 
 export const getAllUsers = async (
 	filter?: string,
@@ -176,6 +179,37 @@ export const getSubscriptionPlans =
 		);
 		return response.data;
 	};
+
+export const createSubscriptionPlan = async (
+	name: string,
+	price: number,
+	duration: number,
+	features: string[],
+): Promise<CreateSubscriptionResponse> => {
+	const payload: any = {
+		plan_name: name,
+		price: price.toString(),
+		duration: duration.toString(),
+	};
+
+	// Map features up to 10
+	features.forEach((feature, index) => {
+		if (index < 10) {
+			payload[`feature_${index + 1}`] = feature;
+		}
+	});
+
+	// Fill remaining features with empty strings if needed
+	for (let i = features.length + 1; i <= 10; i++) {
+		payload[`feature_${i}`] = "";
+	}
+
+	const response = await api.post<CreateSubscriptionResponse>(
+		"/api/v1/admin/payment/",
+		payload,
+	);
+	return response.data;
+};
 
 export const deleteEvent = async (
 	id: string | number,

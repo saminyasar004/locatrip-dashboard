@@ -141,6 +141,22 @@ export const createInterest = async (
 	return response.data;
 };
 
+export const updateInterest = async (
+	id: string | number,
+	name?: string,
+	status?: boolean,
+): Promise<CreateInterestResponse> => {
+	const payload: any = { id: id.toString() };
+	if (name) payload.name = name;
+	if (status !== undefined) payload.status = status ? "True" : "False";
+
+	const response = await api.patch<CreateInterestResponse>(
+		"/api/v1/admin/admin_interest/",
+		payload,
+	);
+	return response.data;
+};
+
 export const deleteEvent = async (
 	id: string | number,
 ): Promise<{ status: string; message: string }> => {

@@ -13,7 +13,11 @@ import { SelectItem } from "@/components/ui/select";
 import PreferenceTable from "@/components/common/preference-table";
 import { useState } from "react";
 import PreferenceModal from "@/components/common/preference-modal";
-import { createInterest, getInterestList } from "@/lib/services/user-service";
+import {
+	createInterest,
+	getInterestList,
+	updateInterest,
+} from "@/lib/services/user-service";
 import { InterestType } from "@/types/preference";
 import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
@@ -57,17 +61,37 @@ export default function Page() {
 		fetchData();
 	}, []);
 
-	const toggleCheck = (id: string) => {
-		setPreferences(
-			preferences.map((pref) =>
-				pref.id === id ? { ...pref, status: !pref.status } : pref,
-			),
-		);
+	const toggleCheck = async (id: string) => {
+		const pref = preferences.find((p) => p.id === id);
+		if (!pref) return;
+
+		try {
+			const newStatus = !pref.status;
+			// Optimistic update
+			setPreferences(
+				preferences.map((p) =>
+					p.id === id ? { ...p, status: newStatus } : p,
+				),
+			);
+			await updateInterest(id, undefined, newStatus);
+		} catch (error) {
+			console.error("Error toggling interest status:", error);
+			// Rollback on error
+			await fetchData();
+		}
 	};
 
 	const handleInterestSubmit = async (name: string) => {
-		await createInterest(name);
-		await fetchData();
+		try {
+			if (selectedPref) {
+				await updateInterest(selectedPref.id, name);
+			} else {
+				await createInterest(name);
+			}
+			await fetchData();
+		} catch (error) {
+			console.error("Error submitting interest:", error);
+		}
 	};
 
 	if (isLoading) {

@@ -28,12 +28,14 @@ import { Preference } from "@/app/(dashboard)/management/preference/page";
 type Props = {
 	preferences: Preference[];
 	toggleCheck: (id: string) => void;
+	onDelete: (id: string) => void;
 	onShowModal: (id: string) => void;
 };
 
 export default function PreferenceTable({
 	preferences,
 	toggleCheck,
+	onDelete,
 	onShowModal,
 }: Props) {
 	return (
@@ -101,7 +103,9 @@ export default function PreferenceTable({
 											</span>
 										</DropdownMenuItem>
 
-										<DropdownMenuItem onClick={() => {}}>
+										<DropdownMenuItem
+											onClick={() => onDelete(pref.id)}
+										>
 											<span className="flex items-center gap-2 cursor-pointer">
 												<Trash2 className="text-red-500" />
 												Delete

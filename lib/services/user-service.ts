@@ -157,6 +157,17 @@ export const updateInterest = async (
 	return response.data;
 };
 
+export const deleteInterest = async (
+	id: string | number,
+): Promise<{ status: string; message: string }> => {
+	const response = await api.delete("/api/v1/admin/admin_interest/", {
+		data: {
+			id: id.toString(),
+		},
+	});
+	return response.data;
+};
+
 export const deleteEvent = async (
 	id: string | number,
 ): Promise<{ status: string; message: string }> => {

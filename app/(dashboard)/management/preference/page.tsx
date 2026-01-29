@@ -15,6 +15,7 @@ import { useState } from "react";
 import PreferenceModal from "@/components/common/preference-modal";
 import {
 	createInterest,
+	deleteInterest,
 	getInterestList,
 	updateInterest,
 } from "@/lib/services/user-service";
@@ -94,6 +95,17 @@ export default function Page() {
 		}
 	};
 
+	const handleDeleteInterest = async (id: string) => {
+		if (!confirm("Are you sure you want to delete this preference?"))
+			return;
+		try {
+			await deleteInterest(id);
+			await fetchData();
+		} catch (error) {
+			console.error("Error deleting interest:", error);
+		}
+	};
+
 	if (isLoading) {
 		return (
 			<div className="flex h-[80vh] items-center justify-center">
@@ -130,6 +142,7 @@ export default function Page() {
 				<PreferenceTable
 					preferences={preferences}
 					toggleCheck={toggleCheck}
+					onDelete={handleDeleteInterest}
 					onShowModal={(id: string) => {
 						setShowModal(true);
 						setSelectedPref(

@@ -8,7 +8,11 @@ import { UserGrowthChartData } from "@/types/chart";
 import { UserMiniType } from "@/types/user";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getAllUsers, getUserGrowthChart } from "@/lib/services/user-service";
+import {
+	getAllUsers,
+	getUserGrowthChart,
+	toggleUserStatus,
+} from "@/lib/services/user-service";
 import { Loader2 } from "lucide-react";
 
 export default function Page() {
@@ -16,45 +20,58 @@ export default function Page() {
 	const [growthData, setGrowthData] = useState<UserGrowthChartData>([]);
 	const [isLoading, setIsLoading] = useState(true);
 
-	useEffect(() => {
-		const fetchData = async () => {
-			try {
-				setIsLoading(true);
-				const [usersRes, growthRes] = await Promise.all([
-					getAllUsers(),
-					getUserGrowthChart(),
-				]);
+	const fetchData = async () => {
+		try {
+			setIsLoading(true);
+			const [usersRes, growthRes] = await Promise.all([
+				getAllUsers(),
+				getUserGrowthChart(),
+			]);
 
-				if (usersRes.status === "success") {
-					const mappedUsers: UserMiniType[] = usersRes.data
-						.slice(0, 5) // Just show recent 5
-						.map((user) => ({
-							id: user.user_id.toString(),
-							username:
-								user.full_name || user.email.split("@")[0],
-							email: user.email,
-							status: user.status,
-						}));
-					setUsers(mappedUsers);
-				}
-
-				if (growthRes) {
-					const mappedGrowth: UserGrowthChartData =
-						growthRes.monthly_growth.map((item) => ({
-							month: item.month,
-							value: item.percentage,
-						}));
-					setGrowthData(mappedGrowth);
-				}
-			} catch (error) {
-				console.error("Error fetching analytics data:", error);
-			} finally {
-				setIsLoading(false);
+			if (usersRes.status === "success") {
+				const mappedUsers: UserMiniType[] = usersRes.data
+					.slice(0, 5) // Just show recent 5
+					.map((user) => ({
+						id: user.user_id.toString(),
+						username: user.full_name || user.email.split("@")[0],
+						email: user.email,
+						status: user.status,
+					}));
+				setUsers(mappedUsers);
 			}
-		};
 
+			if (growthRes) {
+				const mappedGrowth: UserGrowthChartData =
+					growthRes.monthly_growth.map((item) => ({
+						month: item.month,
+						value: item.percentage,
+					}));
+				setGrowthData(mappedGrowth);
+			}
+		} catch (error) {
+			console.error("Error fetching analytics data:", error);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	useEffect(() => {
 		fetchData();
 	}, []);
+
+	const handleToggleStatus = async (
+		userId: string,
+		type: "activate" | "deactivate",
+	) => {
+		try {
+			const res = await toggleUserStatus(userId, type);
+			if (res.status === "success") {
+				fetchData();
+			}
+		} catch (error) {
+			console.error("Error toggling status:", error);
+		}
+	};
 
 	if (isLoading) {
 		return (
@@ -77,7 +94,11 @@ export default function Page() {
 						<Button variant={"link"}>View All User</Button>
 					</Link>
 				</div>
-				<UserTable users={users} showPagination={false} />
+				<UserTable
+					users={users}
+					showPagination={false}
+					onToggleStatus={handleToggleStatus}
+				/>
 			</div>
 		</div>
 	);

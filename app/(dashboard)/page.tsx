@@ -13,6 +13,7 @@ import {
 	getAllUsers,
 	getUserGrowthChart,
 	getSubscriptionRevenueChart,
+	toggleUserStatus,
 } from "@/lib/services/user-service";
 import { Loader2 } from "lucide-react";
 
@@ -28,67 +29,79 @@ export default function HomePage() {
 	});
 	const [isLoading, setIsLoading] = useState(true);
 
-	useEffect(() => {
-		const fetchData = async () => {
-			try {
-				setIsLoading(true);
-				const [usersRes, growthRes, revenueRes] = await Promise.all([
-					getAllUsers(),
-					getUserGrowthChart(),
-					getSubscriptionRevenueChart(),
-				]);
+	const fetchData = async () => {
+		try {
+			setIsLoading(true);
+			const [usersRes, growthRes, revenueRes] = await Promise.all([
+				getAllUsers(),
+				getUserGrowthChart(),
+				getSubscriptionRevenueChart(),
+			]);
 
-				if (usersRes.status === "success") {
-					const mappedUsers: UserMiniType[] = usersRes.data
-						.slice(0, 5) // Just show recent 5
-						.map((user) => ({
-							id: user.user_id.toString(),
-							username:
-								user.full_name || user.email.split("@")[0],
-							email: user.email,
-							status: user.status,
-						}));
-					setUsers(mappedUsers);
-				}
-
-				if (growthRes) {
-					const mappedGrowth: UserGrowthChartData =
-						growthRes.monthly_growth.map((item) => ({
-							month: item.month,
-							value: item.percentage,
-						}));
-					setGrowthData(mappedGrowth);
-					setStats((prev) => ({
-						...prev,
-						totalUsers:
-							growthRes.grand_total_users.toLocaleString(),
-						usersThisYear:
-							growthRes.total_users_this_year.toLocaleString(),
+			if (usersRes.status === "success") {
+				const mappedUsers: UserMiniType[] = usersRes.data
+					.slice(0, 5) // Just show recent 5
+					.map((user) => ({
+						id: user.user_id.toString(),
+						username: user.full_name || user.email.split("@")[0],
+						email: user.email,
+						status: user.status,
 					}));
-				}
-
-				if (revenueRes) {
-					const mappedRevenue: RevenueChartData =
-						revenueRes.monthly_revenue.map((item) => ({
-							month: item.month,
-							revenue: item.amount,
-						}));
-					setRevenueData(mappedRevenue);
-					setStats((prev) => ({
-						...prev,
-						totalRevenue: `$${revenueRes.grand_total.toLocaleString()}`,
-						revenueThisYear: `+$${revenueRes.year_total.toLocaleString()}`,
-					}));
-				}
-			} catch (error) {
-				console.error("Error fetching dashboard data:", error);
-			} finally {
-				setIsLoading(false);
+				setUsers(mappedUsers);
 			}
-		};
 
+			if (growthRes) {
+				const mappedGrowth: UserGrowthChartData =
+					growthRes.monthly_growth.map((item) => ({
+						month: item.month,
+						value: item.percentage,
+					}));
+				setGrowthData(mappedGrowth);
+				setStats((prev) => ({
+					...prev,
+					totalUsers: growthRes.grand_total_users.toLocaleString(),
+					usersThisYear:
+						growthRes.total_users_this_year.toLocaleString(),
+				}));
+			}
+
+			if (revenueRes) {
+				const mappedRevenue: RevenueChartData =
+					revenueRes.monthly_revenue.map((item) => ({
+						month: item.month,
+						revenue: item.amount,
+					}));
+				setRevenueData(mappedRevenue);
+				setStats((prev) => ({
+					...prev,
+					totalRevenue: `$${revenueRes.grand_total.toLocaleString()}`,
+					revenueThisYear: `+$${revenueRes.year_total.toLocaleString()}`,
+				}));
+			}
+		} catch (error) {
+			console.error("Error fetching dashboard data:", error);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	useEffect(() => {
 		fetchData();
 	}, []);
+
+	const handleToggleStatus = async (
+		userId: string,
+		type: "activate" | "deactivate",
+	) => {
+		try {
+			const res = await toggleUserStatus(userId, type);
+			if (res.status === "success") {
+				fetchData();
+			}
+		} catch (error) {
+			console.error("Error toggling status:", error);
+		}
+	};
 
 	if (isLoading) {
 		return (
@@ -146,7 +159,11 @@ export default function HomePage() {
 						<Button variant={"link"}>View All User</Button>
 					</Link>
 				</div>
-				<UserTable users={users} showPagination={false} />
+				<UserTable
+					users={users}
+					showPagination={false}
+					onToggleStatus={handleToggleStatus}
+				/>
 			</div>
 		</div>
 	);

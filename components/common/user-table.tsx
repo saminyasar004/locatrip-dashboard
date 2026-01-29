@@ -70,7 +70,7 @@ export function UserTable({
 								</div>
 							</TableCell>
 							<TableCell
-								className={`text-lg ${user.status.toLowerCase() === "deactive" ? "text-muted-foreground" : "text-foreground"}`}
+								className={`text-lg ${user.status.toLowerCase().startsWith("deactiv") ? "text-muted-foreground" : "text-foreground"}`}
 							>
 								{user.status}
 							</TableCell>
@@ -84,16 +84,18 @@ export function UserTable({
 											onClick={() =>
 												onToggleStatus?.(
 													user.id,
-													user.status.toLowerCase() ===
-														"activate"
+													user.status
+														.toLowerCase()
+														.startsWith("activ")
 														? "deactivate"
 														: "activate",
 												)
 											}
 										>
 											<span className="flex items-center gap-2 cursor-pointer">
-												{user.status.toLowerCase() ===
-												"activate"
+												{user.status
+													.toLowerCase()
+													.startsWith("activ")
 													? "Deactivate"
 													: "Activate"}
 											</span>

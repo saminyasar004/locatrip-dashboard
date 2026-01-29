@@ -17,6 +17,7 @@ import {
 	SubscriptionApiResponse,
 	CreateSubscriptionResponse,
 } from "@/types/subscription";
+import { TermsAndConditionsResponse } from "@/types/legal";
 
 export const getAllUsers = async (
 	filter?: string,
@@ -268,3 +269,11 @@ export const deleteEvent = async (
 	});
 	return response.data;
 };
+
+export const getTermsAndConditions =
+	async (): Promise<TermsAndConditionsResponse> => {
+		const response = await api.get<TermsAndConditionsResponse>(
+			"/api/legal/terms_and_condition/",
+		);
+		return response.data;
+	};

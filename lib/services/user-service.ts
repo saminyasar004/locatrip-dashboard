@@ -1,5 +1,6 @@
 import api from "@/lib/axios";
 import { UserApiResponse } from "@/types/user";
+import { UserGrowthApiResponse } from "@/types/chart";
 
 export const getAllUsers = async (
 	filter?: string,
@@ -40,5 +41,12 @@ export const updateProfile = async (formData: FormData): Promise<any> => {
 			"Content-Type": "multipart/form-data",
 		},
 	});
+	return response.data;
+};
+
+export const getUserGrowthChart = async (): Promise<UserGrowthApiResponse> => {
+	const response = await api.get<UserGrowthApiResponse>(
+		"/api/v1/admin/user_growth_chart/",
+	);
 	return response.data;
 };

@@ -5,37 +5,26 @@ import { StatCard } from "@/components/common/stat-card";
 import { UserTable } from "@/components/common/user-table";
 import { Button } from "@/components/ui/button";
 import { H3 } from "@/components/ui/typography";
-import {
-	RevenueChartData,
-	UserGrowthChartData,
-	UserGrowthApiResponse,
-} from "@/types/chart";
+import { RevenueChartData, UserGrowthChartData } from "@/types/chart";
 import { UserMiniType } from "@/types/user";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getAllUsers, getUserGrowthChart } from "@/lib/services/user-service";
+import {
+	getAllUsers,
+	getUserGrowthChart,
+	getSubscriptionRevenueChart,
+} from "@/lib/services/user-service";
 import { Loader2 } from "lucide-react";
-
-const revenueData: RevenueChartData = [
-	{ month: "", revenue: 0 },
-	{ month: "January", revenue: 143 },
-	{ month: "February", revenue: 78 },
-	{ month: "March", revenue: 256 },
-	{ month: "April", revenue: 94 },
-	{ month: "May", revenue: 212 },
-	{ month: "Jun", revenue: 134 },
-	{ month: "July", revenue: 278 },
-	{ month: "August", revenue: 167 },
-	{ month: "September", revenue: 201 },
-	{ month: "November", revenue: 239 },
-];
 
 export default function HomePage() {
 	const [users, setUsers] = useState<UserMiniType[]>([]);
 	const [growthData, setGrowthData] = useState<UserGrowthChartData>([]);
+	const [revenueData, setRevenueData] = useState<RevenueChartData>([]);
 	const [stats, setStats] = useState({
 		totalUsers: "0",
 		usersThisYear: "0",
+		totalRevenue: "$0",
+		revenueThisYear: "+$0",
 	});
 	const [isLoading, setIsLoading] = useState(true);
 
@@ -43,9 +32,10 @@ export default function HomePage() {
 		const fetchData = async () => {
 			try {
 				setIsLoading(true);
-				const [usersRes, growthRes] = await Promise.all([
+				const [usersRes, growthRes, revenueRes] = await Promise.all([
 					getAllUsers(),
 					getUserGrowthChart(),
+					getSubscriptionRevenueChart(),
 				]);
 
 				if (usersRes.status === "success") {
@@ -68,12 +58,27 @@ export default function HomePage() {
 							value: item.percentage,
 						}));
 					setGrowthData(mappedGrowth);
-					setStats({
+					setStats((prev) => ({
+						...prev,
 						totalUsers:
 							growthRes.grand_total_users.toLocaleString(),
 						usersThisYear:
 							growthRes.total_users_this_year.toLocaleString(),
-					});
+					}));
+				}
+
+				if (revenueRes) {
+					const mappedRevenue: RevenueChartData =
+						revenueRes.monthly_revenue.map((item) => ({
+							month: item.month,
+							revenue: item.amount,
+						}));
+					setRevenueData(mappedRevenue);
+					setStats((prev) => ({
+						...prev,
+						totalRevenue: `$${revenueRes.grand_total.toLocaleString()}`,
+						revenueThisYear: `+$${revenueRes.year_total.toLocaleString()}`,
+					}));
 				}
 			} catch (error) {
 				console.error("Error fetching dashboard data:", error);
@@ -105,10 +110,10 @@ export default function HomePage() {
 				/>
 				<StatCard
 					label="Total Revenue"
-					isUp={false}
-					value="$45,231"
-					subValue="-2.1%"
-					subText="from last month"
+					isUp={true}
+					value={stats.totalRevenue}
+					subValue={stats.revenueThisYear}
+					subText="this year"
 				/>
 				<StatCard
 					label="Destination"

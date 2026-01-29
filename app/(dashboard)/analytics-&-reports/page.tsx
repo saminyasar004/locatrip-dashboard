@@ -5,48 +5,51 @@ import ChartUserGrowth from "@/components/common/chart-user-growth";
 import { H3 } from "@/components/ui/typography";
 import { RevenueChartData, UserGrowthChartData } from "@/types/chart";
 import { useEffect, useState } from "react";
-import { getUserGrowthChart } from "@/lib/services/user-service";
+import {
+	getUserGrowthChart,
+	getSubscriptionRevenueChart,
+} from "@/lib/services/user-service";
 import { Loader2 } from "lucide-react";
-
-const revenueData: RevenueChartData = [
-	{ month: "", revenue: 0 },
-	{ month: "January", revenue: 143 },
-	{ month: "February", revenue: 78 },
-	{ month: "March", revenue: 256 },
-	{ month: "April", revenue: 94 },
-	{ month: "May", revenue: 212 },
-	{ month: "Jun", revenue: 134 },
-	{ month: "July", revenue: 278 },
-	{ month: "August", revenue: 167 },
-	{ month: "September", revenue: 201 },
-	{ month: "November", revenue: 239 },
-];
 
 export default function Page() {
 	const [growthData, setGrowthData] = useState<UserGrowthChartData>([]);
+	const [revenueData, setRevenueData] = useState<RevenueChartData>([]);
 	const [isLoading, setIsLoading] = useState(true);
 
 	useEffect(() => {
-		const fetchGrowth = async () => {
+		const fetchData = async () => {
 			try {
 				setIsLoading(true);
-				const response = await getUserGrowthChart();
-				if (response) {
+				const [growthRes, revenueRes] = await Promise.all([
+					getUserGrowthChart(),
+					getSubscriptionRevenueChart(),
+				]);
+
+				if (growthRes) {
 					const mappedGrowth: UserGrowthChartData =
-						response.monthly_growth.map((item) => ({
+						growthRes.monthly_growth.map((item) => ({
 							month: item.month,
 							value: item.percentage,
 						}));
 					setGrowthData(mappedGrowth);
 				}
+
+				if (revenueRes) {
+					const mappedRevenue: RevenueChartData =
+						revenueRes.monthly_revenue.map((item) => ({
+							month: item.month,
+							revenue: item.amount,
+						}));
+					setRevenueData(mappedRevenue);
+				}
 			} catch (error) {
-				console.error("Error fetching growth data:", error);
+				console.error("Error fetching analytics data:", error);
 			} finally {
 				setIsLoading(false);
 			}
 		};
 
-		fetchGrowth();
+		fetchData();
 	}, []);
 
 	if (isLoading) {

@@ -24,3 +24,19 @@ export interface UserGrowthApiResponse {
 		percentage: number;
 	}[];
 }
+
+export interface SubscriptionRevenueApiResponse {
+	today: {
+		day_name: string;
+		date: string;
+		month: string;
+		year: number;
+	};
+	year: number;
+	grand_total: number;
+	year_total: number;
+	monthly_revenue: {
+		month: string;
+		amount: number;
+	}[];
+}

@@ -1,6 +1,9 @@
 import api from "@/lib/axios";
 import { UserApiResponse } from "@/types/user";
-import { UserGrowthApiResponse } from "@/types/chart";
+import {
+	SubscriptionRevenueApiResponse,
+	UserGrowthApiResponse,
+} from "@/types/chart";
 
 export const getAllUsers = async (
 	filter?: string,
@@ -50,3 +53,11 @@ export const getUserGrowthChart = async (): Promise<UserGrowthApiResponse> => {
 	);
 	return response.data;
 };
+
+export const getSubscriptionRevenueChart =
+	async (): Promise<SubscriptionRevenueApiResponse> => {
+		const response = await api.get<SubscriptionRevenueApiResponse>(
+			"/api/v1/admin/subscription_revenue_chart/",
+		);
+		return response.data;
+	};
